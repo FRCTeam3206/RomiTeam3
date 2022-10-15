@@ -75,10 +75,27 @@ public class Robot extends TimedRobot {
         break;
       case kDefaultAuto:
       default:
-        // Put default auto code here
+        if(m_drivetrain.getLeftDistanceInch() < 36){
+          accel = accel*2;
+          m_drivetrain.arcadeDrive(accel, 0.0);
+        }
+        if(m_drivetrain.getLeftDistanceInch() == 36){
+          m_drivetrain.arcadeDrive(0.0, 0.5);
+        }
+        if(m_drivetrain.getLeftDistanceInch() < 72 && m_drivetrain.getLeftDistanceInch() > 36){
+          accel = 0.1;
+          accel = accel*2;
+          m_drivetrain.arcadeDrive(accel, 0.0);
+          }
+        if(m_drivetrain.getLeftDistanceInch() == 72){
+          m_drivetrain.arcadeDrive(0.0, 1.0);
+        }
+        else{
+          m_drivetrain.arcadeDrive(0.0,0.0);
+          m_drivetrain.resetEncoders();
+        }
         break;
     }
-  }
 
   /** This function is called once when teleop is enabled. */
   @Override
