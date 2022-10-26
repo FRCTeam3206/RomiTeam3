@@ -79,16 +79,16 @@ public class Robot extends TimedRobot {
       default:
         if(m_drivetrain.getLeftDistanceInch() < 36){
           accel = accel*2;
-          m_drivetrain.arcadeDrive(accel, 0.0);
+          m_drivetrain.arcadeDrive(1, 0.0);
           if(m_drivetrain.getLeftDistanceInch() == 36){
             m_drivetrain.arcadeDrive(0.0, 0.5);
             accel = 0.1;
             accel = accel*2;
-            m_drivetrain.arcadeDrive(accel, 0.0);
+            m_drivetrain.arcadeDrive(1, 0.0);
             if(m_drivetrain.getLeftDistanceInch() < 72 ){
               accel = 0.1;
               accel = accel*2;
-              m_drivetrain.arcadeDrive(accel, 0.0);
+              m_drivetrain.arcadeDrive(1, 0.0);
               }
           }
         }
