@@ -4,28 +4,30 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
+
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
+  double accel = 0.1;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   private final RomiDrivetrain m_drivetrain = new RomiDrivetrain();
 
   // This line creates a new controller object, which we can use to get inputs from said controller/joystick.
   private GenericHID controller = new GenericHID(0);
-
+  private SlewRateLimiter accelLimit=new SlewRateLimiter(.5);
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -78,16 +80,19 @@ public class Robot extends TimedRobot {
         if(m_drivetrain.getLeftDistanceInch() < 36){
           accel = accel*2;
           m_drivetrain.arcadeDrive(accel, 0.0);
-        }
-        if(m_drivetrain.getLeftDistanceInch() == 36){
-          m_drivetrain.arcadeDrive(0.0, 0.5);
-        }
-        if(m_drivetrain.getLeftDistanceInch() < 72 && m_drivetrain.getLeftDistanceInch() > 36){
-          accel = 0.1;
-          accel = accel*2;
-          m_drivetrain.arcadeDrive(accel, 0.0);
+          if(m_drivetrain.getLeftDistanceInch() == 36){
+            m_drivetrain.arcadeDrive(0.0, 0.5);
+            accel = 0.1;
+            accel = accel*2;
+            m_drivetrain.arcadeDrive(accel, 0.0);
+            if(m_drivetrain.getLeftDistanceInch() < 72 ){
+              accel = 0.1;
+              accel = accel*2;
+              m_drivetrain.arcadeDrive(accel, 0.0);
+              }
           }
-        if(m_drivetrain.getLeftDistanceInch() == 72){
+        }
+      if(m_drivetrain.getLeftDistanceInch() == 72){
           m_drivetrain.arcadeDrive(0.0, 1.0);
         }
         else{
@@ -96,6 +101,7 @@ public class Robot extends TimedRobot {
         }
         break;
     }
+  }
 
   /** This function is called once when teleop is enabled. */
   @Override
@@ -112,7 +118,7 @@ public class Robot extends TimedRobot {
     double forwardSpeed = -controller.getRawAxis(1);
     double turnSpeed = -controller.getRawAxis(0);
 
-    m_drivetrain.arcadeDrive(forwardSpeed, turnSpeed);
+    m_drivetrain.arcadeDrive(accelLimit.calculate(forwardSpeed), turnSpeed);
   }
 
   /** This function is called once when the robot is disabled. */
