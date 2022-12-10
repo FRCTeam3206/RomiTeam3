@@ -4,8 +4,10 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,23 +22,29 @@ public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
-  double accel = 0.1;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   private final RomiDrivetrain m_drivetrain = new RomiDrivetrain();
 
+  Servo servo = new Servo(2);
+  CameraServerJNI crte_cam = new CameraServerJNI();
+  //UsbCamera camera = new UsbCamera();
+
   // This line creates a new controller object, which we can use to get inputs from said controller/joystick.
   private GenericHID controller = new GenericHID(0);
-  private SlewRateLimiter accelLimit=new SlewRateLimiter(.5);
+
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
+
   @Override
   public void robotInit() {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+    SmartDashboard.getNumber("X", 0);
   }
 
   /**
@@ -68,6 +76,8 @@ public class Robot extends TimedRobot {
     m_drivetrain.resetEncoders();
   }
 
+  public double step = 0;
+
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
@@ -77,36 +87,58 @@ public class Robot extends TimedRobot {
         break;
       case kDefaultAuto:
       default:
-        if(m_drivetrain.getLeftDistanceInch() < 36){
-          accel = accel*2;
-          m_drivetrain.arcadeDrive(1, 0.0);
-          if(m_drivetrain.getLeftDistanceInch() == 36){
-            m_drivetrain.arcadeDrive(0.0, 0.5);
-            accel = 0.1;
-            accel = accel*2;
-            m_drivetrain.arcadeDrive(1, 0.0);
-            if(m_drivetrain.getLeftDistanceInch() < 72 ){
-              accel = 0.1;
-              accel = accel*2;
-              m_drivetrain.arcadeDrive(1, 0.0);
-              }
-          }
+
+      if (step == 0){
+        while(m_drivetrain.getLeftDistanceInch()<= 1){
+          m_drivetrain.tankDrive(.5, .5);
         }
-      if(m_drivetrain.getLeftDistanceInch() == 72){
-          m_drivetrain.arcadeDrive(0.0, 1.0);
+        // move servos to pos.2
+        step = 1;
+        System.out.println(step);
+       }
+      
+       if (step == 1){
+        while(m_drivetrain.getLeftDistanceInch()<= -3){
+          m_drivetrain.tankDrive(-.5, -.5);
         }
-        else{
-          m_drivetrain.arcadeDrive(0.0,0.0);
-          m_drivetrain.resetEncoders();
+        step = 2;
+        System.out.println(step);
+       }
+
+       if (step == 2){
+        while(m_drivetrain.getLeftDistanceInch()<= 4){
+          m_drivetrain.tankDrive(.5, .5);
         }
-        break;
+        //move servos to pos. 3
+        step = 3;
+        System.out.println(step);
+
+       }
+       if (step == 3){
+        while(m_drivetrain.getLeftDistanceInch()<= 9){
+          m_drivetrain.tankDrive(-.5, -.5);
+        }
+        //move servos to pos. 3
+        step = 4;
+        System.out.println(step);
+       }
+      
+      
+
+
+      
+          
+        
+      }
     }
-  }
+  
 
-  /** This function is called once when teleop is enabled. */
+  /** This function is called once when teleop is enable. */
   @Override
-  public void teleopInit() {}
-
+  public void teleopInit() {
+    servo.set(.5);
+  }
+  
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
@@ -114,13 +146,22 @@ public class Robot extends TimedRobot {
 
     // The getRawAxis method allows one to get the value an axis is on
     // We use axis to get stuff from the joysticks, as it is easy to represent a joystick
-    // like a coordinate grid, which allows us to just extract the x or y axis information from it.
+    // like a coordinate grid, which allows us to just extract the x or y axis information from it.dsas
+
     double forwardSpeed = -controller.getRawAxis(1);
     double turnSpeed = -controller.getRawAxis(0);
-
-    m_drivetrain.arcadeDrive(accelLimit.calculate(forwardSpeed), turnSpeed);
+    if(controller.getRawButtonPressed(2)==true){
+      servo.set(1);
+    }
+    if(controller.getRawButtonPressed(1)==true){
+      servo.set(0);
+    }
+    
+    
+    
+    m_drivetrain.arcadeDrive(forwardSpeed, turnSpeed);
   }
-
+ 
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {}
